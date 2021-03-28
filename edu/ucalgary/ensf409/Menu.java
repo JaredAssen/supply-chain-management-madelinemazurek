@@ -1,11 +1,3 @@
-//to do:
-// make it so navigation doesn't delete  previous entries
-// make it so can check over entries before submiting form request
-
-//WHAT DO I PASS TO DATABASE CONSTRUCTOR???????????????????????????????
-
-//DOCUMENT
-
 package edu.ucalgary.ensf409;
 
 import java.util.Scanner;
@@ -29,7 +21,7 @@ public class Menu {
      * Default constructor that will initialize dataBaseObj and call printMenu() to start the user input process which will initialize the other data members
      */
     public Menu(){
-        this.databaseObj = new DatabaseAccess("jdbc:mysql://localhost/inventory","JaredA","Blackfoot69.");
+        this.databaseObj = new DatabaseAccess("jdbc:mysql://localhost/inventory","scm","ensf409");
         databaseObj.initializeConnection();
         printMenu();
         databaseObj.close();
@@ -91,7 +83,7 @@ public class Menu {
                          ArrayList<String> catOptions = databaseObj.fetchTables();
 
                          int i = 0;
-                         for(i = 0; i < catOptions.size()-1;i++){
+                         for(i = 0; i < catOptions.size()-2;i++){
                              //manufacturer is not a valid choice
                              if(!catOptions.get(i).equals("manufacturer")){
                                 System.out.print(catOptions.get(i)+", ");
@@ -280,7 +272,7 @@ public class Menu {
         this.searchInventoryObj = new SearchInventory(category,type,Integer.parseInt(numberOfItems),databaseObj);
             //call method here to search the database for the furniture-> should return true if could generate furniture and false if request is impossible
             //use getter to see if request failed or not a call a file depending off it fails
-            if(searchInventoryObj.getOrderFound()){
+            if(!searchInventoryObj.getOrderFound()){
                 
                 //if here it means that the request could not be fulfilled so print out a message and return
                 System.out.println("Order cannot be fulfilled based on current inventory. Suggested manufacturers are ");
@@ -305,6 +297,9 @@ public class Menu {
                 writeTextObj = new WriteText(category, type, numberOfItems, searchInventoryObj.getBestOrder().getIDs(), String.valueOf(searchInventoryObj.getBestOrder().getCost()));
                 writeTextObj.writeOutput();
 
+                //delete the items from the inventory --> pass table name and ids
+                databaseObj.deleteFromTable(category, searchInventoryObj.getBestOrder().getIDs());
+
                 //print out ids of order and the price
                 String[] idArray = searchInventoryObj.getBestOrder().getIDs();
                 int i = 0;
@@ -313,14 +308,14 @@ public class Menu {
                 for(i = 0; i < idArray.length-1; i++){
                     if(i == idArray.length-2){
                         //at second last id
-                        System.out.print(idArray[i]+"and ");
+                        System.out.print(idArray[i]+" and ");
                     }
                     else{
                         System.out.print(idArray[i]+", ");
                     }
                 }
                 //at last index of idArray
-                System.out.print(idArray[i]+" for" + searchInventoryObj.getBestOrder().getCost() + ".");
+                System.out.print(idArray[i]+" for $" + searchInventoryObj.getBestOrder().getCost() + ".");
             }
     }
 
